@@ -57,9 +57,19 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Program.fs" />
     <None Include="App.config" />
     <Content Include="packages.config" />
+    <Compile Include="IMPNode.fs" />
+    <FsYacc Include="IMPParser.fsp">
+      <OtherFlags>--module IMPParser</OtherFlags>
+    </FsYacc>
+    <FsLex Include="IMPLexer.fsl">
+      <OtherFlags>--unicode</OtherFlags>
+    </FsLex>
+    <Compile Include="IMPParser.fsi" />
+    <Compile Include="IMPParser.fs" />
+    <Compile Include="IMPLexer.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
