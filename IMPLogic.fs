@@ -1,11 +1,12 @@
 ﻿module IMPLogic
 
+open Microsoft.FSharp.Collections
 open IMPNode
 
 type label = int
 let empty_label : label = -1
 type SameSet =
-    | Set of string
+    | Set of (string)
     | Exclude of (SameSet * string)
     member this.ToString =
         match this with
@@ -13,8 +14,8 @@ type SameSet =
         | Set(s) -> s
 
 type FormulaBool =
-    | True of BExp
-    | False of BExp
+    | IsTrue of BExp
+    | IsFalse of BExp
 
 type Formula =
     | Disjunction of (Formula * Formula)
@@ -29,17 +30,34 @@ type Formula =
         | Disjunction(f1, f2) -> sprintf "%s\nor\n%s"
                                         (match f1 with
                                             | Disjunction(f11, f12) -> sprintf "%s" (Disjunction(f11, f12).ToString)
-                                            | other -> (sprintf "(%s)" other.ToString).Replace("\n", "\n "))
+                                            | other -> (sprintf "(\n%s" other.ToString).Replace("\n", "\n ") + "\n)")
                                         (match f2 with
                                             | Disjunction(f21, f22) -> sprintf "%s" (Disjunction(f21, f22).ToString)
-                                            | other -> (sprintf "(%s)" other.ToString).Replace("\n", "\n "))
-        | Conjunction(f1, f2) -> (sprintf "%s\nand\n%s" f1.ToString f2.ToString)
+                                            | other -> (sprintf "(\n%s" other.ToString).Replace("\n", "\n ") + "\n)")
+        | Conjunction(f1, f2) -> sprintf "%s\nand\n%s"
+                                        (match f1 with
+                                            | Conjunction(f11, f12) -> sprintf "%s" (Conjunction(f11, f12).ToString)
+                                            | other -> other.ToString.Replace("\n", "\n "))
+                                        (match f2 with
+                                            | Conjunction(f21, f22) -> sprintf "%s" (Conjunction(f21, f22).ToString)
+                                            | other -> other.ToString.Replace("\n", "\n "))
         | Condition(s, l) -> sprintf "%s = %d" s l
         | Assign(s, a) -> sprintf "%s = %s" s a.ToString
-        | Bool(True(b)) -> sprintf "%s" b.ToString
-        | Bool(False(b)) -> sprintf "!%s" b.ToString
+        | Bool(IsTrue(b)) -> sprintf "%s" b.ToString
+        | Bool(IsFalse(b)) -> sprintf "!%s" b.ToString
         | Same(s) -> sprintf "same(%s)" s.ToString
         | Transition(ent, c, exit) -> sprintf "%d -> %d: %s" ent exit c.ToString
+    member this.DisjunctionNormalForm : Formula =
+        match this with
+        | Disjunction(f1, f2) -> Disjunction(f1.DisjunctionNormalForm, f2.DisjunctionNormalForm)
+        | Conjunction(f1, f2) ->
+            match f1 with
+            | Disjunction(f11, f12) -> Disjunction(Conjunction(f11, f2).DisjunctionNormalForm, Conjunction(f12, f2).DisjunctionNormalForm)
+            | _ ->
+                match f2 with
+                | Disjunction(f21, f22) -> Disjunction(Conjunction(f1, f21).DisjunctionNormalForm, Conjunction(f1, f22).DisjunctionNormalForm)
+                | _ -> Conjunction(f1.DisjunctionNormalForm, f2.DisjunctionNormalForm)
+        | _ -> this
 
 let conjunction a =
     let i b = Conjunction(a, b)
@@ -61,7 +79,7 @@ let Build (c : CExp) : Formula =
         | Transition(l1, c, l2) ->
             match c with
             | IMPNode.Assign(n, v) -> Condition("pc", l1)
-                                        |> conjunction (Condition("pc", l2))
+                                        |> conjunction (Condition("pc'", l2))
                                         |> conjunction (Assign(n, v))
                                         |> conjunction (Same(Set("V") |> except n))
             | IMPNode.Skip(_) -> Condition("pc", l1)
@@ -72,31 +90,31 @@ let Build (c : CExp) : Formula =
                                     |> disjunction (Extract (Transition(cur_label - 1, p2, l2)))
             | Wait(b) -> (Condition("pc", l1)
                             |> conjunction (Condition("pc'", l2))
-                            |> conjunction (Bool(True(b)))
+                            |> conjunction (Bool(IsTrue(b)))
                             |> conjunction (Same(Set("V"))))
                          |> disjunction (Condition("pc", l1)
                             |> conjunction (Condition("pc'", l1))
-                            |> conjunction (Bool(False(b)))
+                            |> conjunction (Bool(IsFalse(b)))
                             |> conjunction (Same(Set("V"))))
             | If(b, p1, p2) ->  cur_label <- cur_label + 2
                                 (Condition((sprintf "pc%d" l1), l1)
                                     |> conjunction (Condition("pc", cur_label - 2))
-                                    |> conjunction (Bool(True(b)))
+                                    |> conjunction (Bool(IsTrue(b)))
                                     |> conjunction (Same(Set("V"))))
                                 |> disjunction (Condition("pc", l1)
                                     |> conjunction (Condition("pc'", cur_label - 1))
-                                    |> conjunction (Bool(False(b)))
+                                    |> conjunction (Bool(IsFalse(b)))
                                     |> conjunction (Same(Set("V"))))
                                 |> disjunction (Extract(Transition(cur_label - 2, p1, l2)))
                                 |> disjunction (Extract(Transition(cur_label - 1, p2, l2)))
             | While(b, p) ->    cur_label <- cur_label + 1
                                 (Condition("pc", l1)
                                     |> conjunction (Condition("pc'", cur_label - 1))
-                                    |> conjunction (Bool(True(b)))
+                                    |> conjunction (Bool(IsTrue(b)))
                                     |> conjunction (Same(Set("V"))))
                                 |> disjunction (Condition("pc", l1)
                                     |> conjunction (Condition("pc'", l2))
-                                    |> conjunction (Bool(False(b)))
+                                    |> conjunction (Bool(IsFalse(b)))
                                     |> conjunction (Same(Set("V"))))
                                 |> disjunction (Extract(Transition(cur_label - 1, p, l2)))
             | Co(p1, p2) -> cur_label <- cur_label + 4

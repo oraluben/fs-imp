@@ -7,22 +7,19 @@ let main argv =
     let lexbuf = LexBuffer<char>.FromString """
 cobegin
 while True do
-wait(t=0 | t=1 & t=2);
-x:=1+2*1;
-t:=1
+wait(turn=0);
+x:=1;
+turn:=1
 endwhile
 ||
 while True do
-wait(t=1);
+wait(turn=1);
 x:=2;
-t:=0
-endwhile;
-if True then skip
-else skip
-endif
+turn:=0
+endwhile
 coend
     """
 
     match IMPParser.start IMPLexer.tokenize lexbuf with 
-    | { Stmt = s } -> printf "%s" (Build s).ToString
+    | { Stmt = s } -> printf "%s\n" (Build s).DisjunctionNormalForm.ToString
     0
