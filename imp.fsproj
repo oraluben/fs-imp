@@ -59,6 +59,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <None Include="App.config" />
     <Content Include="packages.config" />
+    <None Include="README.md" />
     <Compile Include="IMPNode.fs" />
     <FsYacc Include="IMPParser.fsp">
       <OtherFlags>--module IMPParser</OtherFlags>
