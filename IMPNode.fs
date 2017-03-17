@@ -61,6 +61,5 @@ type CExp =
         | If(b, c1, c2) -> (sprintf "if %s\n%s\n%s" b.ToString c1.ToString c2.ToString).Replace("\n", "\n ")
         | While(b, c) -> (sprintf "while %s\n%s" b.ToString c.ToString).Replace("\n", "\n ")
 
-
 type Program = 
     { Stmt: CExp }

@@ -1,5 +1,6 @@
 ﻿open Microsoft.FSharp.Text.Lexing
 open IMPNode
+open IMPLogic
 
 [<EntryPoint>]
 let main argv = 
@@ -23,5 +24,5 @@ coend
     """
 
     match IMPParser.start IMPLexer.tokenize lexbuf with 
-    | { Stmt = s } -> printfn "%s" s.ToString
+    | { Stmt = s } -> printf "%s" (Build s).ToString
     0
