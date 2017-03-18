@@ -68,6 +68,7 @@
       <OtherFlags>--unicode</OtherFlags>
     </FsLex>
     <Compile Include="IMPLogic.fs" />
+    <Compile Include="IMPKripke.fs" />
     <Compile Include="IMPParser.fsi" />
     <Compile Include="IMPParser.fs" />
     <Compile Include="IMPLexer.fs" />

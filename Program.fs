@@ -1,6 +1,7 @@
 ﻿open Microsoft.FSharp.Text.Lexing
 open IMPNode
 open IMPLogic
+open IMPKripke
 
 [<EntryPoint>]
 let main argv = 
@@ -20,6 +21,8 @@ endwhile
 coend
     """
 
-    match IMPParser.start IMPLexer.tokenize lexbuf with 
-    | { Stmt = s } -> printf "%s\n" (Build s).DisjunctionNormalForm.ToString
+    let f = match IMPParser.start IMPLexer.tokenize lexbuf with
+            | { Stmt = s } -> Build s
+    do printf "%s\n" f.DisjunctionNormalForm.ToString
+    do printf "%A\n" f.sharedVars
     0

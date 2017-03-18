@@ -1,5 +1,7 @@
 ﻿module IMPNode
 
+open System
+
 type AName = string
 type A_OP = 
     | PLUS | MINUS | TIMES
