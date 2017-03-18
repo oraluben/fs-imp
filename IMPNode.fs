@@ -3,7 +3,7 @@
 open System
 
 type AName = string
-type A_OP = 
+type A_OP =
     | PLUS | MINUS | TIMES
     member this.ToString =
         match this with
@@ -33,13 +33,13 @@ type B_COMP_OP =
         | EQ -> "="
         | LE -> "<="
 type BExp = 
-    | Bool of bool
+    | BBool of bool
     | Compare of (AExp * B_COMP_OP * AExp)
     | Bitop of (BExp * B_BIT_OP * BExp)
     | Negative of BExp
     member this.ToString : string =
         match this with
-        | Bool(b) -> sprintf "%b" b
+        | BBool(b) -> sprintf "%b" b
         | Compare(a1, op, a2) -> sprintf "(%s %s %s)" a1.ToString op.ToString a2.ToString
         | Bitop(b1, op, b2) -> sprintf "(%s %s %s)" b1.ToString op.ToString b2.ToString
         | Negative(b) -> sprintf "(!%s)" b.ToString 

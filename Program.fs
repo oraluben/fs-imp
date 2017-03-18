@@ -1,11 +1,13 @@
-﻿open Microsoft.FSharp.Text.Lexing
+﻿open FParsec
+
 open IMPNode
+open IMPParser
 open IMPLogic
 open IMPKripke
 
 [<EntryPoint>]
 let main argv = 
-    let lexbuf = LexBuffer<char>.FromString """
+    let lexbuf = """
 cobegin
 while True do
 wait(turn=0);
@@ -20,9 +22,5 @@ turn:=0
 endwhile
 coend
     """
-
-    let f = match IMPParser.start IMPLexer.tokenize lexbuf with
-            | { Stmt = s } -> Build s
-    do printf "%s\n" f.DisjunctionNormalForm.ToString
-    do printf "%A\n" f.sharedVars
+    test lexbuf
     0

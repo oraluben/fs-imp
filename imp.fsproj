@@ -64,7 +64,6 @@
     <Compile Include="IMPLogic.fs" />
     <Compile Include="IMPKripke.fs" />
     <Compile Include="IMPParser.fs" />
-    <Compile Include="IMPLexer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
