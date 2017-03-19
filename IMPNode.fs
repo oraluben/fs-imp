@@ -1,6 +1,10 @@
 ﻿module IMPNode
 
 open System
+open Microsoft.FSharp.Collections
+
+type Label = int
+type ProgramLabel = Label
 
 type AName = string
 type A_OP =
@@ -14,6 +18,11 @@ type AExp =
     | Int of int
     | Name of AName
     | AExpression of (AExp * A_OP * AExp)
+    member this.Names =
+        match this with
+        | Int(_) -> Set.empty
+        | Name(n) -> Set.singleton n
+        | AExpression(a1, _, a2) -> Set.union a1.Names a2.Names
 
 type B_BIT_OP =
     | AND | OR
@@ -32,15 +41,25 @@ type BExp =
     | Compare of (AExp * B_COMP_OP * AExp)
     | Bitop of (BExp * B_BIT_OP * BExp)
     | Negative of BExp
-    
+    member this.AVar =
+        match this with
+        | BBool(_) -> Set.empty
+        | Negative(b) -> b.AVar
+        | Bitop(b1, _, b2) -> Set.union b1.AVar b2.AVar
+        | Compare(a1, _, a2) -> Set.union a1.Names a2.Names
+
 
 type CExp =
-    | Co of (CExp * CExp)
-    | Skip
-    | Assign of (AName * AExp)
-    | Sequence of (CExp * CExp)
-    | Wait of BExp
-    | If of (BExp * CExp * CExp)
-    | While of (BExp * CExp)
-    | Program of (int * CExp)
-    | Labeled of (int * CExp)
+    | Co of (CExp * CExp) * Label
+    | Skip of unit * Label
+    | Assign of (AName * AExp) * Label
+    | Sequence of (CExp * CExp) * Label
+    | Wait of BExp * Label
+    | If of (BExp * CExp * CExp) * Label
+    | While of (BExp * CExp) * Label
+    | Program of CExp * ProgramLabel
+    member this.Label =
+        match this with
+        | Co(_, l) | Skip(_, l) | Assign(_, l) | Sequence(_, l)
+        | Wait(_, l) | If(_, l) | While(_, l) | Program(_, l)
+            -> l

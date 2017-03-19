@@ -2,8 +2,7 @@
 
 open IMPNode
 
-type label = int
-let empty_label : label = -1
+let empty_label : Label = -1
 type SameSet =
     | Set of (string)
     | Exclude of (SameSet * string)
@@ -11,3 +10,5 @@ type SameSet =
 type FormulaBool =
     | IsTrue of BExp
     | IsFalse of BExp
+    | Conjunction of FormulaBool * FormulaBool
+    | Disjunction of FormulaBool * FormulaBool
