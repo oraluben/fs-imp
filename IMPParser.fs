@@ -13,9 +13,17 @@ type State =
      Label: Label
      SharedVar: Set<string>
      LabelStack: Stack<Label>
-     ProgramStack: Stack<ProgramLabel>}
+     ProgramStack: Stack<ProgramLabel>
+     ExitStack: Stack<Label>
+     FirstOrderLogic: Formula}
     with
-       static member Default = {Program = 0; Label = 0; SharedVar = Set.empty; LabelStack = EmptyStack; ProgramStack = EmptyStack}
+       static member Default = {Program = 0;
+                                Label = 0;
+                                SharedVar = Set.empty;
+                                LabelStack = EmptyStack;
+                                ProgramStack = EmptyStack;
+                                ExitStack = StackNode(EmptyStack, 0);
+                                FirstOrderLogic = True}
 
 let UpdateAndGetLabel : Parser<Label, State> =
     updateUserState (fun s -> {s with Label = s.Label + 1})
@@ -114,8 +122,8 @@ let impWhile =
     |> between (pstring "while") (pstring "endwhile")
     .>>. UpdateAndGetLabel |>> LabelCExp
 let impCo =
-    pipe2   (UpdateAndPushProgram >>. impCExp .>>. PopAndGetProgram |>> Program)
-            ((pstring "||") >>. UpdateAndPushProgram >>. impCExp .>>. PopAndGetProgram |>> Program)
+    pipe2   (UpdateAndPushProgram >>. impCExp .>>. UpdateAndGetLabel .>>. PopAndGetProgram |>> Program)
+            ((pstring "||") >>. UpdateAndPushProgram >>. impCExp .>>. UpdateAndGetLabel .>>. PopAndGetProgram |>> Program)
             (fun p1 p2 -> (Co, (p1, p2)))
     |> between (pstring "cobegin") (pstring "coend")
     .>>. UpdateAndGetLabel |>> LabelCExp
@@ -130,7 +138,7 @@ do impCExpRef :=
     (impSequence <|> impCTerm)
 
 
-let impProgram = impCExp |>> (fun c -> Program(c, 0)) .>> eof
+let impProgram = impCExp .>>. UpdateAndGetLabel |>> (fun c -> Program(c, 0)) .>> eof
 
 let test str =
     match runParserOnString impProgram State.Default "" str with
