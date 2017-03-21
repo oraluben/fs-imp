@@ -22,5 +22,14 @@ turn:=0
 endwhile
 coend
     """
+
+    let test str =
+        match runParserOnString impProgram State.Default "" str with
+        | Success(result, state, _) ->
+            //printfn "Success!"
+            //printfn "%A" result
+            //printfn "%A" state.SharedVar
+            printfn "%A" (Build result).DisjunctionNormalForm
+        | Failure(errorMsg, _, _) -> printfn "Failure: %s" errorMsg
     test lexbuf
     0

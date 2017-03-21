@@ -3,7 +3,13 @@
 open System
 open Microsoft.FSharp.Collections
 
-type Label = int
+type Label =
+    | LabelID of int
+    | EmptyLabel
+    member this.ToString =
+        match this with
+        | LabelID(l) -> sprintf "%d" l
+        | EmptyLabel -> "EmptyLabel"
 type ProgramLabel = Label
 
 type AName = string
@@ -51,27 +57,35 @@ type BExp =
 
 [<StructuredFormatDisplay("{AsString}")>]
 type CExp =
-    | Co of (CExp * CExp) * Label
+    | Co of (Program * Program) * Label
     | Skip of unit * Label
     | Assign of (AName * AExp) * Label
     | Sequence of (CExp * CExp) * Label
     | Wait of BExp * Label
     | If of (BExp * CExp * CExp) * Label
     | While of (BExp * CExp) * Label
-    | Program of (CExp * Label) * ProgramLabel
     member this.Label =
         match this with
         | Co(_, l) | Skip(_, l) | Assign(_, l) | Sequence(_, l)
-        | Wait(_, l) | If(_, l) | While(_, l) | Program(_, l)
-            -> l
+        | Wait(_, l) | If(_, l) | While(_, l) -> l
+    member this.AsString =
+        match this with
+        | Co(a, l) -> sprintf "%A Co: %A" l a
+        | Sequence(a, l) -> sprintf "%A Sequence: %A" l a
+        | Skip(_, l) -> sprintf "%A Skip" l
+        | Assign(a, l) -> sprintf "%A Assign: %A" l a
+        | Wait(a, l) -> sprintf "%A Wait: %A" l a
+        | If(a, l) -> sprintf "%A If: %A" l a
+        | While(a, l) -> sprintf "%A While: %A" l a
+and Program =
+    | Program of CExp * (ProgramLabel * Label)
+    member this.ExitLabel =
+        match this with
+        | Program(_, (_, l)) -> l
+    member this.Label =
+        match this with
+        | Program(c, _) -> c.Label
     override this.ToString() =
         match this with
-        | Program((p, exit_label), program_label) -> sprintf "%d Program -> %d: %A" program_label exit_label p
-        | Co(a, l) -> sprintf "%d Co: %A" l a
-        | Sequence(a, l) -> sprintf "%d Sequence: %A" l a
-        | Skip(_, l) -> sprintf "%d Skip" l
-        | Assign(a, l) -> sprintf "%d Assign: %A" l a
-        | Wait(a, l) -> sprintf "%d Wait: %A" l a
-        | If(a, l) -> sprintf "%d If: %A" l a
-        | While(a, l) -> sprintf "%d While: %A" l a
+        | Program(c, _) -> sprintf "%A Program -> %A: %A" this.Label this.ExitLabel c
     member this.AsString = this.ToString()

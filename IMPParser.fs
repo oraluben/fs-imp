@@ -2,7 +2,6 @@ module IMPParser
 
 open FParsec
 open IMPNode
-open IMPLogic
 
 type Stack<'t> =
     | EmptyStack
@@ -10,24 +9,22 @@ type Stack<'t> =
 
 type State =
     {Program: int
-     Label: Label
+     Label: int
      SharedVar: Set<string>
-     LabelStack: Stack<Label>
-     ProgramStack: Stack<ProgramLabel>
-     ExitStack: Stack<Label>
-     FirstOrderLogic: Formula}
+     LabelStack: Stack<int>
+     ProgramStack: Stack<int>
+     ExitStack: Stack<int>}
     with
        static member Default = {Program = 0;
                                 Label = 0;
                                 SharedVar = Set.empty;
                                 LabelStack = EmptyStack;
                                 ProgramStack = EmptyStack;
-                                ExitStack = StackNode(EmptyStack, 0);
-                                FirstOrderLogic = True}
+                                ExitStack = StackNode(EmptyStack, 0)}
 
 let UpdateAndGetLabel : Parser<Label, State> =
     updateUserState (fun s -> {s with Label = s.Label + 1})
-    >>. getUserState |>> (fun s -> s.Label)
+    >>. getUserState |>> (fun s -> LabelID(s.Label))
 let UpdateAndPushProgram =
     updateUserState (fun (s : State) -> {s with
                                             ProgramStack = StackNode(s.ProgramStack, s.Program + 1);
@@ -36,7 +33,7 @@ let PopAndGetProgram : Parser<ProgramLabel, State> =
     updateUserState (fun s -> {s with ProgramStack =
                                         match s.ProgramStack with
                                         | StackNode(_s, _) | _s -> _s})
-    >>. getUserState |>> (fun s -> s.Program)
+    >>. getUserState |>> (fun s -> LabelID(s.Program))
 
 let tryApply x f =
     match f with
@@ -122,8 +119,8 @@ let impWhile =
     |> between (pstring "while") (pstring "endwhile")
     .>>. UpdateAndGetLabel |>> LabelCExp
 let impCo =
-    pipe2   (UpdateAndPushProgram >>. impCExp .>>. UpdateAndGetLabel .>>. PopAndGetProgram |>> Program)
-            ((pstring "||") >>. UpdateAndPushProgram >>. impCExp .>>. UpdateAndGetLabel .>>. PopAndGetProgram |>> Program)
+    pipe2   (UpdateAndPushProgram >>. impCExp .>>. (PopAndGetProgram .>>. UpdateAndGetLabel) |>> Program)
+            ((pstring "||") >>. UpdateAndPushProgram >>. impCExp .>>. (PopAndGetProgram .>>. UpdateAndGetLabel) |>> Program)
             (fun p1 p2 -> (Co, (p1, p2)))
     |> between (pstring "cobegin") (pstring "coend")
     .>>. UpdateAndGetLabel |>> LabelCExp
@@ -138,12 +135,4 @@ do impCExpRef :=
     (impSequence <|> impCTerm)
 
 
-let impProgram = impCExp .>>. UpdateAndGetLabel |>> (fun c -> Program(c, 0)) .>> eof
-
-let test str =
-    match runParserOnString impProgram State.Default "" str with
-    | Success(result, state, _) ->
-        printfn "Success!"
-        printfn "%A" result
-        printfn "%A" state.SharedVar
-    | Failure(errorMsg, _, _) -> printfn "Failure: %s" errorMsg
+let impProgram = impCExp .>>. UpdateAndGetLabel |>> (fun (c, l) -> Program(c, (LabelID(0), l))) .>> eof

@@ -61,8 +61,8 @@
     <Content Include="packages.config" />
     <None Include="README.md" />
     <Compile Include="IMPNode.fs" />
-    <Compile Include="IMPLogic.fs" />
     <Compile Include="IMPParser.fs" />
+    <Compile Include="IMPLogic.fs" />
     <Compile Include="IMPKripke.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
