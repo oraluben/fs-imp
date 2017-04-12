@@ -7,7 +7,7 @@ open IMPKripke
 
 [<EntryPoint>]
 let main argv = 
-    let lexbuf = """
+    let mutable lexbuf = """
 cobegin
 while True do
 wait(turn=0);
@@ -22,13 +22,14 @@ turn:=0
 endwhile
 coend
     """
+    lexbuf <- "cobegin cobegin skip || skip coend || skip coend"
 
     let test str =
         match runParserOnString impProgram State.Default "" str with
         | Success(result, state, _) ->
-            //printfn "Success!"
-            //printfn "%A" result
-            //printfn "%A" state.SharedVar
+            printfn "Success!"
+            printfn "%s" result.ToString
+            printfn "%A" state.SharedVar
             printfn "%A" (Build result).DisjunctionNormalForm
         | Failure(errorMsg, _, _) -> printfn "Failure: %s" errorMsg
     test lexbuf

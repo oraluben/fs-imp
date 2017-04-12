@@ -42,7 +42,11 @@ let tryApply x f =
 
 let impInt =
     anyOf "012" |>> (string >> int >> Int)
-let impName = many1Satisfy isLetter
+let impName =
+    many1Satisfy isLetter
+    >>= (fun s_name ->
+        updateUserState (fun s -> {s with SharedVar = s.SharedVar.Add s_name})
+        >>. preturn s_name)
 let impAFactor = impInt <|> (impName |>> Name) |> between spaces spaces
 let impATermOp = stringReturn "*" TIMES |> between spaces spaces
 let impAExprOp =
@@ -74,11 +78,6 @@ let impBool =   (stringReturn "True"  true)
 let impCompare =
     pipe3   impAExp impBCompareOp impAExp
             (fun a1 op a2 -> Compare(a1, op, a2))
-    >>= (fun b ->
-        updateUserState (fun s -> {s with SharedVar = Set.union s.SharedVar (match s.ProgramStack with
-                                                                            | EmptyStack -> Set.empty
-                                                                            | StackNode(_) -> b.AVar)})
-        >>. preturn b)
 let impBFactor = impBool <|> impCompare |> between spaces spaces
 
 let impBExp, impBExpRef = createParserForwardedToRef<BExp, State>()

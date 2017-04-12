@@ -24,11 +24,6 @@ type AExp =
     | Int of int
     | Name of AName
     | AExpression of (AExp * A_OP * AExp)
-    member this.Names =
-        match this with
-        | Int(_) -> Set.empty
-        | Name(n) -> Set.singleton n
-        | AExpression(a1, _, a2) -> Set.union a1.Names a2.Names
 
 type B_BIT_OP =
     | AND | OR
@@ -47,12 +42,6 @@ type BExp =
     | Compare of (AExp * B_COMP_OP * AExp)
     | Bitop of (BExp * B_BIT_OP * BExp)
     | Negative of BExp
-    member this.AVar =
-        match this with
-        | BBool(_) -> Set.empty
-        | Negative(b) -> b.AVar
-        | Bitop(b1, _, b2) -> Set.union b1.AVar b2.AVar
-        | Compare(a1, _, a2) -> Set.union a1.Names a2.Names
 
 
 [<StructuredFormatDisplay("{AsString}")>]
@@ -79,13 +68,15 @@ type CExp =
         | While(a, l) -> sprintf "%A While: %A" l a
 and Program =
     | Program of CExp * (ProgramLabel * Label)
+    member this.ProgramLabel =
+        match this with
+        | Program(_, (l, _)) -> l
     member this.ExitLabel =
         match this with
         | Program(_, (_, l)) -> l
     member this.Label =
         match this with
         | Program(c, _) -> c.Label
-    override this.ToString() =
+    member this.ToString =
         match this with
-        | Program(c, _) -> sprintf "%A Program -> %A: %A" this.Label this.ExitLabel c
-    member this.AsString = this.ToString()
+        | Program(c, _) -> sprintf "Program %A (%A -> %A): %A" this.ProgramLabel this.Label this.ExitLabel c

@@ -10,8 +10,17 @@ type SameSet =
 type FormulaBool =
     | IsTrue of BExp
     | IsFalse of BExp
-    
-[<StructuredFormatDisplay("{AsString}")>]
+
+[<StructuredFormatDisplay("{ToString}")>]
+type FLabel =
+    | EnterLabel of int
+    | ExitLabel of int
+    member this.ToString =
+        match this with
+        | EnterLabel(l) -> sprintf "%d" l
+        | ExitLabel(l) -> sprintf "%d'" l
+
+[<StructuredFormatDisplay("{ToString}")>]
 type Formula =
     | Conjunction of Formula * Formula
     | Disjunction of Formula * Formula
@@ -19,25 +28,25 @@ type Formula =
     | FAssign of (string * AExp)
     | Bool of FormulaBool
     | Same of SameSet
-    | PcAt of string
+    | PcAt of FLabel * Label
     member this.DisjunctionNormalForm =
         match this with
-        | Bool(_) | Same(_) | PcAt(_) | FAssign(_) | Condition(_) -> this
+        | Bool(_) | Same(_) |  FAssign(_) | Condition(_) | PcAt(_,_) -> this
         | Conjunction(Disjunction(d1, d2), f) | Conjunction(f, Disjunction(d1, d2)) ->
             Disjunction(Conjunction(d1, f), Conjunction(d2, f)).DisjunctionNormalForm
         | Conjunction(f1, f2) -> Conjunction(f1.DisjunctionNormalForm, f2.DisjunctionNormalForm)
         | Disjunction(f1, f2) -> Disjunction(f1.DisjunctionNormalForm, f2.DisjunctionNormalForm)
-    member this.AsString =
+    member this.ToString =
         match this with
         | Bool(b) -> sprintf "%A" b
         | Same(s) -> sprintf "Same(%A)" s
-        | PcAt(l) -> sprintf "pc = %s" l
         | FAssign(v, a) -> sprintf "%s = %A" v a
         | Condition(v, l) -> sprintf "%s = %A" v l
         | Conjunction(f, Conjunction(c1, c2)) | Conjunction(Conjunction(c1, c2), f) ->
             sprintf "(%A) and %A" f (Conjunction(c1, c2))
         | Conjunction(f1, f2) -> sprintf "(%A) and (%A)" f1 f2
         | Disjunction(f1, f2) -> sprintf "%A\nor %A" f1 f2
+        | PcAt(p, l) -> sprintf "pc%A = %A" p l
 
 let True =  Bool(IsTrue(BBool(true)))
 let False = Bool(IsTrue(BBool(false)))
@@ -51,77 +60,83 @@ let rec Build (p : Program) : Formula =
     let rec BuildFromTransition (p : CExp, exit_label : Label) =
         let program_label =
             match ProgramStack with
-            | StackNode(_, l) -> l
+            | StackNode(_, l) ->
+                match l with
+                | LabelID(l) -> l
+                | EmptyLabel ->
+                    sprintf "empty label in program stack" |> failwith
             | EmptyStack ->
                 sprintf "no program label: %A" p |> failwith
-        let pc0 = (if program_label = LabelID(0)
-                    then "pc"
-                    else sprintf "pc%s" program_label.ToString)
-        let pc1 = (if program_label = LabelID(0)
-                    then "pc'"
-                    else sprintf "pc%s'" program_label.ToString)
+        let pc0 = program_label
+        let pc1 = program_label
         match p with
         | Skip(_, l) ->
-            Condition(pc0, program_label)
-                |> conjunction (Condition(pc1, exit_label))
+            PcAt(EnterLabel(program_label), p.Label)
+                |> conjunction (PcAt(ExitLabel(program_label), exit_label))
                 |> conjunction (Same(Set("V")))
         | Wait(b, l) ->
-            (Condition(pc0, program_label)
-                |> conjunction (Condition(pc1, program_label))
+            (PcAt(EnterLabel(program_label), p.Label)
+                |> conjunction (PcAt(ExitLabel(program_label), p.Label))
                 |> conjunction (Bool(IsFalse(b)))
                 |> conjunction (Same(Set("V"))))
-            |> disjunction (Condition(pc0, program_label)
-                |> conjunction (Condition(pc1, exit_label))
+            |> disjunction (PcAt(EnterLabel(program_label), p.Label)
+                |> conjunction (PcAt(ExitLabel(program_label), exit_label))
                 |> conjunction (Bool(IsTrue(b)))
                 |> conjunction (Same(Set("V"))))
         | Assign((n, a), l) ->
-            Condition(pc0, program_label)
-                |> conjunction (Condition(pc1, exit_label))
+            PcAt(EnterLabel(program_label), p.Label)
+                |> conjunction (PcAt(ExitLabel(program_label), exit_label))
                 |> conjunction (FAssign(n, a))
                 |> conjunction (Same(Exclude(Set("V"), n)))
         | Sequence((c1, c2), l) ->
             BuildFromTransition(c1, c2.Label)
                 |> disjunction (BuildFromTransition(c2, exit_label))
         | If((b, c1, c2), l) ->
-            (Condition(pc0, program_label)
-                |> conjunction (Condition(pc1, c1.Label))
+            (PcAt(EnterLabel(program_label), p.Label)
+                |> conjunction (PcAt(ExitLabel(program_label), c1.Label))
                 |> conjunction (Bool(IsTrue(b)))
                 |> conjunction (Same(Set("V"))))
-            |> disjunction (Condition(pc0, program_label)
-                |> conjunction (Condition(pc1, c2.Label))
+            |> disjunction (PcAt(EnterLabel(program_label), p.Label)
+                |> conjunction (PcAt(ExitLabel(program_label), c2.Label))
                 |> conjunction (Bool(IsFalse(b)))
                 |> conjunction (Same(Set("V"))))
             |> disjunction (BuildFromTransition(c1, exit_label))
             |> disjunction (BuildFromTransition(c2, exit_label))
         | While((b, c), l) ->
-            (Condition(pc0, program_label)
-                |> conjunction (Condition(pc1, c.Label))
+            (PcAt(EnterLabel(program_label), p.Label)
+                |> conjunction (PcAt(ExitLabel(program_label), c.Label))
                 |> conjunction (Bool(IsTrue(b)))
                 |> conjunction (Same(Set("V"))))
-            |> disjunction (Condition(pc0, program_label)
-                |> conjunction (Condition(pc1, exit_label))
+            |> disjunction (PcAt(EnterLabel(program_label), p.Label)
+                |> conjunction (PcAt(ExitLabel(program_label), exit_label))
                 |> conjunction (Bool(IsFalse(b)))
                 |> conjunction (Same(Set("V"))))
-            |> disjunction (BuildFromTransition(c, program_label))
+            |> disjunction (BuildFromTransition(c, p.Label))
         | Co((Program(c0, (pl0, l0)), Program(c1, (pl1, l1))), l) ->
-            let pc00 = sprintf "pc%s" pl0.ToString
-            let pc01 = sprintf "pc%s'" pl0.ToString
-            let pc10 = sprintf "pc%s" pl1.ToString
-            let pc11 = sprintf "pc%s'" pl1.ToString
-            (Condition(pc0, program_label)
-                |> conjunction (Condition(pc00, c0.Label))
-                |> conjunction (Condition(pc10, c1.Label))
-                |> conjunction (Condition(pc1, EmptyLabel)))
-            |> disjunction (Condition(pc0, EmptyLabel)
-                |> conjunction (Condition(pc00, l0))
-                |> conjunction (Condition(pc10, l1))
-                |> conjunction (Condition(pc1, exit_label))
-                |> conjunction (Condition(pc01, EmptyLabel))
-                |> conjunction (Condition(pc11, EmptyLabel)))
+            let pl0i =
+                match pl0 with
+                | LabelID(l) -> l
+                | EmptyLabel ->
+                    sprintf "empty label in program %A" c0 |> failwith
+            let pl1i =
+                match pl1 with
+                | LabelID(l) -> l
+                | EmptyLabel ->
+                    sprintf "empty label in program %A" c1 |> failwith
+            (PcAt(EnterLabel(program_label), p.Label)
+                |> conjunction (PcAt(ExitLabel(program_label), EmptyLabel))
+                |> conjunction (PcAt(ExitLabel(pl0i), c0.Label))
+                |> conjunction (PcAt(ExitLabel(pl1i), c1.Label)))
+            |> disjunction (PcAt(EnterLabel(program_label), EmptyLabel)
+                |> conjunction (PcAt(EnterLabel(pl0i), l0))
+                |> conjunction (PcAt(EnterLabel(pl1i), l1))
+                |> conjunction (PcAt(ExitLabel(program_label), exit_label))
+                |> conjunction (PcAt(ExitLabel(pl0i), EmptyLabel))
+                |> conjunction (PcAt(ExitLabel(pl1i), EmptyLabel)))
             |> disjunction (BuildFromTransition(c0, c0.Label)
-                |> conjunction (PcAt pc00))
+                |> conjunction (Same(Set(sprintf "pc%d, pc%d" program_label pl1i))))
             |> disjunction (BuildFromTransition(c1, c1.Label)
-                |> conjunction (PcAt pc10))
+                |> conjunction (Same(Set(sprintf "pc%d, pc%d" program_label pl0i))))
     match p with
     | Program(c, (program_label, exit_label)) ->
         (ProgramStack <- StackNode(ProgramStack, program_label))
@@ -130,4 +145,3 @@ let rec Build (p : Program) : Formula =
                             | StackNode(s, _) -> s
                             | EmptyStack -> EmptyStack
             id)
-let rec Y f x = f (Y f) x
