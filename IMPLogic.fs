@@ -137,7 +137,7 @@ let rec Build (p : Program) : Formula =
                 |> conjunction (PcAt(ExitLabel(pl1i), EmptyLabel)))
             |> (fun f ->
                 ProgramStack <- StackNode(ProgramStack, LabelID(pl0i))
-                disjunction (BuildFromTransition(c0, c0.Label)
+                disjunction (BuildFromTransition(c0, l0)
                     |> (ProgramStack <- match ProgramStack with
                                         | StackNode(s, _) -> s
                                         | EmptyStack -> EmptyStack
@@ -145,7 +145,7 @@ let rec Build (p : Program) : Formula =
                     |> conjunction (Same(Set(sprintf "pc%d, pc%d" program_label pl1i)))) f)
             |> (fun f ->
                 ProgramStack <- StackNode(ProgramStack, LabelID(pl1i))
-                disjunction (BuildFromTransition(c1, c1.Label)
+                disjunction (BuildFromTransition(c1, l1)
                     |> (ProgramStack <- match ProgramStack with
                                         | StackNode(s, _) -> s
                                         | EmptyStack -> EmptyStack
