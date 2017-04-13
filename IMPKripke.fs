@@ -57,7 +57,7 @@ let SharedVars (p : Program) =
                 | StackNode(s, _) -> s
                 | _ -> "stack empty" |> failwith
     walk p.CExp
-    Map.fold (fun cur k (ps : Set<ProgramLabel>) -> if (ps.Count > 1) then Set.union (Set.singleton k) cur else cur) Set.empty Vars
+    Map.fold (fun cur k (ps : Set<ProgramLabel>) -> if (ps.Count > 0) then Set.union (Set.singleton k) cur else cur) Set.empty Vars
 
 let InitStates (p : Program) : KripkeStructure =
     let init_ps : Pc = Set.fold (fun cur_ps cur_pc ->
@@ -107,6 +107,7 @@ let rec BuildKripkeStates (p : Program) : Set<KripkeState * KripkeState> =
         let curs = Set.maxElement todos
         Set.iter (fun next_kstate ->
                             if Set.contains next_kstate done_ then () else todos <- Set.add next_kstate todos
+                            if curs = next_kstate then printfn "%A" next_kstate
                             graph <- Set.add (curs, next_kstate) graph) (Next curs rules)
         done_ <- Set.add curs done_
         todos <- Set.remove curs todos

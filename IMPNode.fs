@@ -55,8 +55,8 @@ type BExp =
         | Negative(b) -> not (b.Reduce v)
         | Bitop(b1, AND, b2) -> (b1.Reduce v) && (b2.Reduce v)
         | Bitop(b1, OR, b2) -> (b1.Reduce v) || (b2.Reduce v)
-        | Compare(a1, EQ, a2) -> (a1.Reduce v) = (a1.Reduce v)
-        | Compare(a1, LE, a2) -> (a1.Reduce v) <= (a1.Reduce v)
+        | Compare(a1, EQ, a2) -> (a1.Reduce v) = (a2.Reduce v)
+        | Compare(a1, LE, a2) -> (a1.Reduce v) <= (a2.Reduce v)
 
 
 [<StructuredFormatDisplay("{AsString}")>]

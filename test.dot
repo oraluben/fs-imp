@@ -1,0 +1,99 @@
+digraph G {
+   "turn=0
+pc2=ʌ,pc1=ʌ,pc0=9" -> { "turn=0
+pc2=7,pc1=3,pc0=ʌ" }
+   "turn=0
+pc2=5,pc1=1,pc0=ʌ" -> { "turn=0
+pc2=5,pc1=1,pc0=ʌ" }
+   "turn=0
+pc2=5,pc1=1,pc0=ʌ" -> { "turn=0
+pc2=5,pc1=2,pc0=ʌ" }
+   "turn=0
+pc2=7,pc1=1,pc0=ʌ" -> { "turn=0
+pc2=5,pc1=1,pc0=ʌ" }
+   "turn=0
+pc2=7,pc1=1,pc0=ʌ" -> { "turn=0
+pc2=7,pc1=2,pc0=ʌ" }
+   "turn=0
+pc2=5,pc1=2,pc0=ʌ" -> { "turn=0
+pc2=5,pc1=2,pc0=ʌ" }
+   "turn=0
+pc2=5,pc1=2,pc0=ʌ" -> { "turn=1
+pc2=5,pc1=3,pc0=ʌ" }
+   "turn=0
+pc2=7,pc1=2,pc0=ʌ" -> { "turn=0
+pc2=5,pc1=2,pc0=ʌ" }
+   "turn=0
+pc2=7,pc1=2,pc0=ʌ" -> { "turn=1
+pc2=7,pc1=3,pc0=ʌ" }
+   "turn=0
+pc2=5,pc1=3,pc0=ʌ" -> { "turn=0
+pc2=5,pc1=1,pc0=ʌ" }
+   "turn=0
+pc2=5,pc1=3,pc0=ʌ" -> { "turn=0
+pc2=5,pc1=3,pc0=ʌ" }
+   "turn=0
+pc2=7,pc1=3,pc0=ʌ" -> { "turn=0
+pc2=7,pc1=1,pc0=ʌ" }
+   "turn=0
+pc2=7,pc1=3,pc0=ʌ" -> { "turn=0
+pc2=5,pc1=3,pc0=ʌ" }
+   "turn=1
+pc2=ʌ,pc1=ʌ,pc0=9" -> { "turn=1
+pc2=7,pc1=3,pc0=ʌ" }
+   "turn=1
+pc2=5,pc1=1,pc0=ʌ" -> { "turn=1
+pc2=5,pc1=1,pc0=ʌ" }
+   "turn=1
+pc2=5,pc1=1,pc0=ʌ" -> { "turn=1
+pc2=6,pc1=1,pc0=ʌ" }
+   "turn=1
+pc2=6,pc1=1,pc0=ʌ" -> { "turn=0
+pc2=7,pc1=1,pc0=ʌ" }
+   "turn=1
+pc2=6,pc1=1,pc0=ʌ" -> { "turn=1
+pc2=6,pc1=1,pc0=ʌ" }
+   "turn=1
+pc2=7,pc1=1,pc0=ʌ" -> { "turn=1
+pc2=5,pc1=1,pc0=ʌ" }
+   "turn=1
+pc2=7,pc1=1,pc0=ʌ" -> { "turn=1
+pc2=7,pc1=1,pc0=ʌ" }
+   "turn=1
+pc2=5,pc1=3,pc0=ʌ" -> { "turn=1
+pc2=5,pc1=1,pc0=ʌ" }
+   "turn=1
+pc2=5,pc1=3,pc0=ʌ" -> { "turn=1
+pc2=6,pc1=3,pc0=ʌ" }
+   "turn=1
+pc2=6,pc1=3,pc0=ʌ" -> { "turn=0
+pc2=7,pc1=3,pc0=ʌ" }
+   "turn=1
+pc2=6,pc1=3,pc0=ʌ" -> { "turn=1
+pc2=6,pc1=1,pc0=ʌ" }
+   "turn=1
+pc2=7,pc1=3,pc0=ʌ" -> { "turn=1
+pc2=7,pc1=1,pc0=ʌ" }
+   "turn=1
+pc2=7,pc1=3,pc0=ʌ" -> { "turn=1
+pc2=5,pc1=3,pc0=ʌ" }
+{rank = same; "turn=0
+pc2=ʌ,pc1=ʌ,pc0=9"; "turn=1
+pc2=ʌ,pc1=ʌ,pc0=9"}
+{rank = same; "turn=0
+pc2=7,pc1=3,pc0=ʌ"; "turn=1
+pc2=7,pc1=3,pc0=ʌ"}
+{rank = same; "turn=0
+pc2=7,pc1=1,pc0=ʌ"; "turn=0
+pc2=5,pc1=3,pc0=ʌ"; "turn=1
+pc2=7,pc1=1,pc0=ʌ"; "turn=1
+pc2=5,pc1=3,pc0=ʌ"}
+{rank = same; "turn=0
+pc2=5,pc1=1,pc0=ʌ"; "turn=0
+pc2=7,pc1=2,pc0=ʌ"; "turn=1
+pc2=5,pc1=1,pc0=ʌ"; "turn=1
+pc2=6,pc1=3,pc0=ʌ"}
+{rank = same; "turn=0
+pc2=5,pc1=2,pc0=ʌ"; "turn=1
+pc2=6,pc1=1,pc0=ʌ"}
+   }

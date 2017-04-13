@@ -10,7 +10,7 @@ open IMPLogic
 open IMPKripke
 
 type IMPArguments =
-    | [<MainCommand; ExactlyOnce; Last>] Source of path:string
+    | [<MainCommand; Last>] Source of path:string
 with
     interface IArgParserTemplate with
         member s.Usage =
@@ -23,7 +23,15 @@ let main argv =
         match runParserOnString impProgram State.Default "" str with
         | Success(result, state, _) ->
             printfn "%A" result
+            printfn "%A" (Build result)
             printfn "%A" (BuildKripkeStates result)
+            
+            let name = "test"
+            let dotFilename = name + ".dot"
+            let pngFilename = name + ".png"
+            GraphViz.createDotFile dotFilename (BuildKripkeStates result)
+    
+            GraphViz.generateImageFile dotFilename "dot" "png" pngFilename 
         | Failure(errorMsg, _, _) -> printfn "Failure: %s" errorMsg
 
     let errorHandler = ProcessExiter(colorizer = function ErrorCode.HelpText -> None | _ -> Some ConsoleColor.Red)
