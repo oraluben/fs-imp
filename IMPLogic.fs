@@ -24,24 +24,26 @@ type FLabel =
 type Formula =
     | Conjunction of Formula * Formula
     | Disjunction of Formula * Formula
-    | Condition of (string * Label)
     | FAssign of (string * AExp)
     | Bool of FormulaBool
     | Same of SameSet
     | PcAt of FLabel * Label
     member this.DisjunctionNormalForm =
         match this with
-        | Bool(_) | Same(_) |  FAssign(_) | Condition(_) | PcAt(_,_) -> this
+        | Bool(_) | Same(_) |  FAssign(_) | PcAt(_,_) -> this
         | Conjunction(Disjunction(d1, d2), f) | Conjunction(f, Disjunction(d1, d2)) ->
             Disjunction(Conjunction(d1, f), Conjunction(d2, f)).DisjunctionNormalForm
         | Conjunction(f1, f2) -> Conjunction(f1.DisjunctionNormalForm, f2.DisjunctionNormalForm)
         | Disjunction(f1, f2) -> Disjunction(f1.DisjunctionNormalForm, f2.DisjunctionNormalForm)
+    member this.Conjunctions : Set<Formula> =
+        match this.DisjunctionNormalForm with
+        | Disjunction(f1, f2) -> Set.union f1.Conjunctions f2.Conjunctions
+        | f -> Set.singleton f
     member this.ToString =
         match this with
         | Bool(b) -> sprintf "%A" b
         | Same(s) -> sprintf "Same(%A)" s
         | FAssign(v, a) -> sprintf "%s = %A" v a
-        | Condition(v, l) -> sprintf "%s = %A" v l
         | Conjunction(f, Conjunction(c1, c2)) | Conjunction(Conjunction(c1, c2), f) ->
             sprintf "(%A) and %A" f (Conjunction(c1, c2))
         | Conjunction(f1, f2) -> sprintf "(%A) and (%A)" f1 f2
@@ -133,10 +135,22 @@ let rec Build (p : Program) : Formula =
                 |> conjunction (PcAt(ExitLabel(program_label), exit_label))
                 |> conjunction (PcAt(ExitLabel(pl0i), EmptyLabel))
                 |> conjunction (PcAt(ExitLabel(pl1i), EmptyLabel)))
-            |> disjunction (BuildFromTransition(c0, c0.Label)
-                |> conjunction (Same(Set(sprintf "pc%d, pc%d" program_label pl1i))))
-            |> disjunction (BuildFromTransition(c1, c1.Label)
-                |> conjunction (Same(Set(sprintf "pc%d, pc%d" program_label pl0i))))
+            |> (fun f ->
+                ProgramStack <- StackNode(ProgramStack, LabelID(pl0i))
+                disjunction (BuildFromTransition(c0, c0.Label)
+                    |> (ProgramStack <- match ProgramStack with
+                                        | StackNode(s, _) -> s
+                                        | EmptyStack -> EmptyStack
+                        id)
+                    |> conjunction (Same(Set(sprintf "pc%d, pc%d" program_label pl1i)))) f)
+            |> (fun f ->
+                ProgramStack <- StackNode(ProgramStack, LabelID(pl1i))
+                disjunction (BuildFromTransition(c1, c1.Label)
+                    |> (ProgramStack <- match ProgramStack with
+                                        | StackNode(s, _) -> s
+                                        | EmptyStack -> EmptyStack
+                        id)
+                    |> conjunction (Same(Set(sprintf "pc%d, pc%d" program_label pl0i)))) f)
     match p with
     | Program(c, (program_label, exit_label)) ->
         (ProgramStack <- StackNode(ProgramStack, program_label))

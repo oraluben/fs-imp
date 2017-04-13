@@ -22,10 +22,8 @@ let main argv =
     let test str =
         match runParserOnString impProgram State.Default "" str with
         | Success(result, state, _) ->
-            printfn "Success!"
-            printfn "%s" result.ToString
-            printfn "%A" state.SharedVar
-            printfn "%A" (Build result).DisjunctionNormalForm
+            printfn "%A" result
+            printfn "%A" (BuildKripkeStates result)
         | Failure(errorMsg, _, _) -> printfn "Failure: %s" errorMsg
 
     let errorHandler = ProcessExiter(colorizer = function ErrorCode.HelpText -> None | _ -> Some ConsoleColor.Red)

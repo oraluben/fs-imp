@@ -10,14 +10,12 @@ type Stack<'t> =
 type State =
     {Program: int
      Label: int
-     SharedVar: Set<string>
      LabelStack: Stack<int>
      ProgramStack: Stack<int>
      ExitStack: Stack<int>}
     with
        static member Default = {Program = 0;
                                 Label = 0;
-                                SharedVar = Set.empty;
                                 LabelStack = EmptyStack;
                                 ProgramStack = EmptyStack;
                                 ExitStack = StackNode(EmptyStack, 0)}
@@ -42,11 +40,7 @@ let tryApply x f =
 
 let impInt =
     anyOf "012" |>> (string >> int >> Int)
-let impName =
-    many1Satisfy isLetter
-    >>= (fun s_name ->
-        updateUserState (fun s -> {s with SharedVar = s.SharedVar.Add s_name})
-        >>. preturn s_name)
+let impName = many1Satisfy isLetter
 let impAFactor = impInt <|> (impName |>> Name) |> between spaces spaces
 let impATermOp = stringReturn "*" TIMES |> between spaces spaces
 let impAExprOp =
