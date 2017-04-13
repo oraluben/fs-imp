@@ -27,6 +27,8 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
+    <StartArguments>source.imp</StartArguments>
+    <StartWorkingDirectory>C:\Users\easonyan\Documents\Visual Studio 2017\Projects\imp\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -65,8 +67,12 @@
     <Compile Include="IMPLogic.fs" />
     <Compile Include="IMPKripke.fs" />
     <Compile Include="Program.fs" />
+    <None Include="source.imp" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Argu">
+      <HintPath>packages\Argu.3.7.0\lib\net40\Argu.dll</HintPath>
+    </Reference>
     <Reference Include="FParsec">
       <HintPath>packages\FParsec.1.0.2\lib\net40-client\FParsec.dll</HintPath>
     </Reference>
