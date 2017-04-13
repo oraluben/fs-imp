@@ -23,8 +23,6 @@ let main argv =
         match runParserOnString impProgram State.Default "" str with
         | Success(result, state, _) ->
             printfn "%A" result
-            printfn "%A" (Build result)
-            printfn "%A" (BuildKripkeStates result)
             
             let name = "test"
             let dotFilename = name + ".dot"

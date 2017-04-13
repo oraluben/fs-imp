@@ -80,12 +80,8 @@ let Next (kstate : KripkeState) (fs : Formula) : KripkeStructure =
             | Disjunction(_) -> "error" |> failwith
         // check
         if Set.fold (fun pre cur_f -> pre && match cur_f with
-                                                | PcAt(EnterLabel(l), v) ->
-                                                    //printfn "%A %A %A" (Pcs kstate) l v
-                                                    (Pcs kstate).[LabelID(l)] = v
-                                                | Bool(fb) ->
-                                                    //printfn "%A %A %A" (Vs kstate) fb (checkVal (Vs kstate) fb)
-                                                    checkVal (Vs kstate) fb
+                                                | PcAt(EnterLabel(l), v) -> (Pcs kstate).[LabelID(l)] = v
+                                                | Bool(fb) -> checkVal (Vs kstate) fb
                                                 | _ -> true) true (allCon f)
         then
             Some(Set.fold (fun pre cur_f -> match cur_f with
@@ -107,7 +103,6 @@ let rec BuildKripkeStates (p : Program) : Set<KripkeState * KripkeState> =
         let curs = Set.maxElement todos
         Set.iter (fun next_kstate ->
                             if Set.contains next_kstate done_ then () else todos <- Set.add next_kstate todos
-                            if curs = next_kstate then printfn "%A" next_kstate
                             graph <- Set.add (curs, next_kstate) graph) (Next curs rules)
         done_ <- Set.add curs done_
         todos <- Set.remove curs todos
