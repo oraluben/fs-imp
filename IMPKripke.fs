@@ -2,8 +2,8 @@
 
 open Microsoft.FSharp.Collections
 open IMPNode
-open IMPLogic
 open IMPParser
+open IMPLogic
 
 type Valuation = Map<string, int>
 let checkVal (vs : Valuation) (fb : FormulaBool) : bool =
@@ -67,7 +67,7 @@ let InitStates (p : Program) : KripkeStructure =
         Set.map (fun (v_name, v_val) -> match kstate with
                                         | (v, pc) -> (Map.add v_name v_val v), pc) (vals n)
     let addSharedVar (ks : KripkeStructure) (v : string) : KripkeStructure =
-        Set.fold (fun cur_new_ks kstate -> Set.union cur_new_ks (cartesianProduct kstate v)) Set.empty ks 
+        Set.fold (fun cur_new_ks kstate -> Set.union cur_new_ks (cartesianProduct kstate v)) Set.empty ks
     Set.fold (fun (cur_v_p_set : KripkeStructure) v -> addSharedVar cur_v_p_set v) (Set.singleton (Map.empty, init_ps)) (SharedVars p)
 
 let Next (kstate : KripkeState) (fs : Formula) : KripkeStructure =

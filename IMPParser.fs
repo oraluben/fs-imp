@@ -1,4 +1,4 @@
-module IMPParser
+﻿module IMPParser
 
 open FParsec
 open IMPNode
@@ -11,14 +11,12 @@ type State =
     {Program: int
      Label: int
      LabelStack: Stack<int>
-     ProgramStack: Stack<int>
-     ExitStack: Stack<int>}
+     ProgramStack: Stack<int>}
     with
        static member Default = {Program = 0;
                                 Label = 0;
                                 LabelStack = EmptyStack;
-                                ProgramStack = EmptyStack;
-                                ExitStack = StackNode(EmptyStack, 0)}
+                                ProgramStack = EmptyStack}
 
 let UpdateAndGetLabel : Parser<Label, State> =
     updateUserState (fun s -> {s with Label = s.Label + 1})

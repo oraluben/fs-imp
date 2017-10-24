@@ -44,7 +44,7 @@ type B_COMP_OP =
         match this with
         | EQ -> "="
         | LE -> "<="
-type BExp = 
+type BExp =
     | BBool of bool
     | Compare of (AExp * B_COMP_OP * AExp)
     | Bitop of (BExp * B_BIT_OP * BExp)

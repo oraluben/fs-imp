@@ -24,12 +24,12 @@ let main argv =
         | Success(result, state, _) ->
             printfn "%A" result
             
-            let name = "test"
-            let dotFilename = name + ".dot"
-            let pngFilename = name + ".png"
-            GraphViz.createDotFile dotFilename (BuildKripkeStates result)
+            //let name = "test"
+            //let dotFilename = name + ".dot"
+            //let pngFilename = name + ".png"
+            //GraphViz.createDotFile dotFilename (BuildKripkeStates result)
     
-            GraphViz.generateImageFile dotFilename "dot" "png" pngFilename 
+            //GraphViz.generateImageFile dotFilename "dot" "png" pngFilename 
         | Failure(errorMsg, _, _) -> printfn "Failure: %s" errorMsg
 
     let errorHandler = ProcessExiter(colorizer = function ErrorCode.HelpText -> None | _ -> Some ConsoleColor.Red)
