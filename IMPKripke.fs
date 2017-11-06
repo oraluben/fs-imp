@@ -61,7 +61,8 @@ let SharedVars (p : Program) =
 
 let InitStates (p : Program) : KripkeStructure =
     let init_ps : Pc = Set.fold (fun cur_ps cur_pc ->
-                                    Map.add cur_pc (if cur_pc = p.ProgramLabel then p.Label else EmptyLabel) cur_ps) Map.empty (ProgramIDs p)
+                                    Map.add cur_pc (if cur_pc = p.ProgramLabel then p.Label else EmptyLabel) cur_ps)
+                                Map.empty (ProgramIDs p)
     let vals n : Set<string * int> = Seq.fold (fun (cur_n_v_set : Set<string * int>) v -> cur_n_v_set.Add (n, v)) Set.empty {0 .. 1}
     let cartesianProduct (kstate : KripkeState) (n : string) : KripkeStructure =
         Set.map (fun (v_name, v_val) -> match kstate with

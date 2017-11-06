@@ -69,8 +69,6 @@ let rec Build (p : Program) : Formula =
                     sprintf "empty label in program stack" |> failwith
             | EmptyStack ->
                 sprintf "no program label: %A" p |> failwith
-        let pc0 = program_label
-        let pc1 = program_label
         match p with
         | Skip(_, l) ->
             PcAt(EnterLabel(program_label), p.Label)
