@@ -83,7 +83,7 @@ let Next (kstate : KripkeState) (fs : Formula) : KripkeStructure =
         if Set.fold (fun pre cur_f -> pre && match cur_f with
                                                 | PcAt(EnterLabel(l), v) -> (Pcs kstate).[LabelID(l)] = v
                                                 | Bool(fb) -> checkVal (Vs kstate) fb
-                                                | _ -> true) true (allCon f)
+                                                | _ -> pre) true (allCon f)
         then
             Some(Set.fold (fun pre cur_f -> match cur_f with
                                             | PcAt(ExitLabel(l), v) -> (Vs pre), (Map.add (LabelID l) v (Pcs pre))
