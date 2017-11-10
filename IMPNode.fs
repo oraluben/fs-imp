@@ -28,9 +28,9 @@ type AExp =
         match this with
         | Int(i) -> i
         | Name(n) -> v.[n]
-        | AExpression(a1, PLUS, a2) -> (a1.Reduce v) + (a1.Reduce v)
-        | AExpression(a1, MINUS, a2) -> (a1.Reduce v) - (a1.Reduce v)
-        | AExpression(a1, TIMES, a2) -> (a1.Reduce v) * (a1.Reduce v)
+        | AExpression(a1, PLUS, a2) -> (a1.Reduce v) + (a2.Reduce v)
+        | AExpression(a1, MINUS, a2) -> (a1.Reduce v) - (a2.Reduce v)
+        | AExpression(a1, TIMES, a2) -> (a1.Reduce v) * (a2.Reduce v)
 
 type B_BIT_OP =
     | AND | OR
